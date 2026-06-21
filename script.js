@@ -237,42 +237,33 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================
 
 window.mostrarSeccion = function(seccion) {
+
     localStorage.setItem('ultimaSeccion', seccion);
 
-    if (seccion === 'calendario') {
-        document.getElementById('pestanasSuperiores').style.display = 'none';
-        document.getElementById('pestanasConfiguracion').style.display = 'none';
-        document.querySelector('.contenido-principal').classList.remove('con-pestanas');
-        document.querySelector('.contenido-principal').classList.remove('con-pestanas-config');
-
-        document.querySelectorAll('.seccion-contenido').forEach(s => s.classList.add('oculto'));
-        document.getElementById('seccion-calendario').classList.remove('oculto');
-
-        document.querySelectorAll('.btn-menu-lateral').forEach(btn => btn.classList.remove('activo'));
-        const btnCal = document.querySelector('.btn-menu-lateral[data-seccion="calendario"]');
-        if (btnCal) btnCal.classList.add('activo');
-
-        inicializarCalendario();
-
-        if (window.innerWidth < 1025) toggleMenuLateral();
-        return;
-    }
-
+    // Si es configuración, ocultar pestañas de servicios y mostrar pestañas de configuración
     if (seccion === 'configuracion') {
         document.getElementById('pestanasSuperiores').style.display = 'none';
         document.getElementById('pestanasConfiguracion').style.display = 'flex';
         document.querySelector('.contenido-principal').classList.remove('con-pestanas');
         document.querySelector('.contenido-principal').classList.add('con-pestanas-config');
-
+        
+        // Ocultar todas las secciones
         document.querySelectorAll('.seccion-contenido').forEach(s => s.classList.add('oculto'));
+        
+        // Mostrar solo configuración
         document.getElementById('seccion-configuracion').classList.remove('oculto');
-
+        
+        // Actualizar botón activo
         document.querySelectorAll('.btn-menu-lateral').forEach(btn => btn.classList.remove('activo'));
         document.querySelector('.btn-menu-lateral[onclick*="configuracion"]').classList.add('activo');
-
+        
+        // Mostrar la primera pestaña de configuración (logo)
         mostrarPestanaConfig('logo');
-
-        if (window.innerWidth < 1025) toggleMenuLateral();
+        
+        // Cerrar menú en móvil
+        if (window.innerWidth < 1025) {
+            toggleMenuLateral();
+        }
     }
 }
 
@@ -281,7 +272,6 @@ window.mostrarSeccion = function(seccion) {
 // ============================================
 
 window.mostrarServicio = function(servicio) {
-    //anioCalendario = new Date().getFullYear();
     servicioActual = servicio;
     
     // Guardar el servicio actual
@@ -349,9 +339,9 @@ window.mostrarPestana = function(pestaña) {
     if (seccion) {
         seccion.classList.remove('oculto');
     }
+    
     localStorage.setItem('ultimaPestaña', pestaña);
 }
-
 
 // ============================================
 // GESTIÓN DE PESTAÑAS DE CONFIGURACIÓN
@@ -495,9 +485,6 @@ document.getElementById('formCliente').addEventListener('submit', async function
         direccion: document.getElementById('clienteDireccion').value,
         telefono: document.getElementById('clienteTelefono').value,
         correo: document.getElementById('clienteCorreo').value,
-        prevCiclo1: document.getElementById('clientePrevCiclo1').value || '',
-        prevCiclo2: document.getElementById('clientePrevCiclo2').value || '',
-        metrologia: document.getElementById('clienteMetrologia').value || '',
         fechaCreacion: firebase.firestore.FieldValue.serverTimestamp(),
         creadoPor: usuarioActual.email
     };
@@ -1133,10 +1120,7 @@ window.abrirModalEditarCliente = function(id) {
                 document.getElementById('editClienteDireccion').value = cliente.direccion;
                 document.getElementById('editClienteTelefono').value = cliente.telefono;
                 document.getElementById('editClienteCorreo').value = cliente.correo;
-                document.getElementById('editClientePrevCiclo1').value = cliente.prevCiclo1 || '';
-                document.getElementById('editClientePrevCiclo2').value = cliente.prevCiclo2 || '';
-                document.getElementById('editClienteMetrologia').value = cliente.metrologia || '';
-
+                
                 document.getElementById('modalEditarCliente').style.display = 'block';
             }
         });
@@ -1168,10 +1152,7 @@ document.getElementById('formEditarCliente').addEventListener('submit', async fu
         nombre,
         direccion,
         telefono,
-        correo,
-        prevCiclo1: document.getElementById('editClientePrevCiclo1').value || '',
-        prevCiclo2: document.getElementById('editClientePrevCiclo2').value || '',
-        metrologia: document.getElementById('editClienteMetrologia').value || '',
+        correo
     };
 
     // Guardar en Firestore
@@ -2080,8 +2061,6 @@ document.getElementById('formEditarEquipo').addEventListener('submit', function(
 window.onclick = function(event) {
     const modalCliente = document.getElementById('modalEditarCliente');
     const modalEquipo = document.getElementById('modalEditarEquipo');
-    const modalCal = document.getElementById('modalCalendario');
-    if (event.target == modalCal) cerrarModalCalendario();
     if (event.target == modalCliente) {
         cerrarModalCliente();
     }
@@ -4247,314 +4226,3 @@ function validarFormulario(formulario) {
     
     return true;
 }
-
-let anioCalendario = new Date().getFullYear();
-const anioInicial = new Date().getFullYear(); // Para resetear al salir/entrar
-let mesModalActual = null; // { mes: number }
-let tachados = {};         // { "anio-mes-id": true }
-let entradasManuales = {}; // Cargadas desde Firestore: { "mes": [{id, nombre, tipo}] }
-let clientesCalendario = []; // Cache de clientes biomédicos con sus meses
-
-const MESES_NOMBRES = [
-    'Enero','Febrero','Marzo','Abril','Mayo','Junio',
-    'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
-];
-
-// ── Inicializar el calendario ──
-async function inicializarCalendario() {
-    anioCalendario = new Date().getFullYear(); // Siempre inicia en año actual
-    tachados = {};
-    await Promise.all([
-        cargarClientesCalendario(),
-        cargarEntradasManualesCalendario(),
-        cargarTachadosCalendario()
-    ]);
-    renderizarCalendario();
-}
-
-// ── Cargar clientes con sus meses asignados ──
-async function cargarClientesCalendario() {
-    try {
-        const snapshot = await db.collection('clientes').get();
-        clientesCalendario = [];
-        snapshot.forEach(doc => {
-            const d = doc.data();
-            clientesCalendario.push({
-                id: doc.id,
-                nombre: d.nombre,
-                prevCiclo1: d.prevCiclo1 || '',
-                prevCiclo2: d.prevCiclo2 || '',
-                metrologia: d.metrologia || ''
-            });
-        });
-    } catch (e) {
-        console.error('Error cargando clientes calendario:', e);
-    }
-}
-
-// ── Cargar entradas manuales desde Firestore ──
-async function cargarEntradasManualesCalendario() {
-    try {
-        const snapshot = await db.collection('calendario-manual').get();
-        entradasManuales = {};
-        snapshot.forEach(doc => {
-            const d = doc.data();
-            const mes = d.mes; // número 1-12
-            if (!entradasManuales[mes]) entradasManuales[mes] = [];
-            entradasManuales[mes].push({
-                id: doc.id,
-                nombre: d.nombre,
-                tipo: d.tipo
-            });
-        });
-    } catch (e) {
-        console.error('Error cargando entradas manuales:', e);
-    }
-}
-
-// ── Cargar tachados desde Firestore ──
-async function cargarTachadosCalendario() {
-    try {
-        const snapshot = await db.collection('calendario-tachados').get();
-        tachados = {};
-        snapshot.forEach(doc => {
-            tachados[doc.id] = true;
-        });
-    } catch (e) {
-        console.error('Error cargando tachados:', e);
-    }
-}
-
-// ── Renderizar los 12 meses ──
-function renderizarCalendario() {
-    const grid = document.getElementById('calendarioGrid');
-    const anioEl = document.getElementById('anioCalendario');
-    if (!grid || !anioEl) return;
-
-    anioEl.textContent = anioCalendario;
-    grid.innerHTML = '';
-
-    for (let mes = 1; mes <= 12; mes++) {
-        const card = crearTarjetaMes(mes);
-        grid.appendChild(card);
-    }
-}
-
-// ── Crear tarjeta de un mes ──
-function crearTarjetaMes(mes) {
-    const card = document.createElement('div');
-    card.className = 'cal-mes-card';
-
-    // Resaltar mes actual
-    const hoy = new Date();
-    if (mes === hoy.getMonth() + 1 && anioCalendario === hoy.getFullYear()) {
-        card.classList.add('cal-mes-actual');
-    }
-
-    // Header del mes
-    const header = document.createElement('div');
-    header.className = 'cal-mes-header';
-    header.innerHTML = `<span class="cal-mes-nombre">${MESES_NOMBRES[mes - 1]}</span>`;
-    card.appendChild(header);
-
-    // Cuerpo con entradas
-    const body = document.createElement('div');
-    body.className = 'cal-mes-body';
-
-    // ── Entradas automáticas de clientes ──
-    clientesCalendario.forEach(cliente => {
-        if (cliente.prevCiclo1 && parseInt(cliente.prevCiclo1) === mes) {
-            body.appendChild(crearEntrada(cliente.nombre, 'preventivo', `auto-prev1-${cliente.id}`, mes, false));
-        }
-        if (cliente.prevCiclo2 && parseInt(cliente.prevCiclo2) === mes) {
-            body.appendChild(crearEntrada(cliente.nombre, 'preventivo', `auto-prev2-${cliente.id}`, mes, false));
-        }
-        if (cliente.metrologia && parseInt(cliente.metrologia) === mes) {
-            body.appendChild(crearEntrada(cliente.nombre, 'metrologia', `auto-met-${cliente.id}`, mes, false));
-        }
-    });
-
-    // ── Entradas manuales ──
-    if (entradasManuales[mes]) {
-        entradasManuales[mes].forEach(entrada => {
-            body.appendChild(crearEntrada(entrada.nombre, entrada.tipo, `manual-${entrada.id}`, mes, true));
-        });
-    }
-
-    card.appendChild(body);
-
-    // Botón agregar
-    const btnAgregar = document.createElement('button');
-    btnAgregar.className = 'cal-btn-agregar';
-    btnAgregar.textContent = '+ Agregar';
-    btnAgregar.onclick = () => abrirModalCalendario(mes);
-    card.appendChild(btnAgregar);
-
-    return card;
-}
-
-// ── Crear una entrada dentro del mes ──
-function crearEntrada(nombre, tipo, entradaId, mes, esManual) {
-    const clave = `${anioCalendario}-${mes}-${entradaId}`;
-    const estaTachado = tachados[clave] === true;
-
-    const div = document.createElement('div');
-    div.className = `cal-entrada cal-entrada-${getTipoClass(tipo)}`;
-    if (estaTachado) div.classList.add('cal-tachado');
-    div.dataset.clave = clave;
-    div.dataset.entradaId = entradaId;
-    div.dataset.esManual = esManual;
-
-    const nombreSpan = document.createElement('span');
-    nombreSpan.className = 'cal-entrada-nombre';
-    nombreSpan.textContent = nombre;
-    div.appendChild(nombreSpan);
-
-    const acciones = document.createElement('div');
-    acciones.className = 'cal-entrada-acciones';
-
-    // Botón ✓ tachar/destachar
-    const btnCheck = document.createElement('button');
-    btnCheck.className = 'cal-btn-check' + (estaTachado ? ' activo' : '');
-    btnCheck.textContent = '✓';
-    btnCheck.title = estaTachado ? 'Desmarcar' : 'Marcar como realizado';
-    btnCheck.onclick = (e) => {
-        e.stopPropagation();
-        toggleTachado(clave, div, btnCheck);
-    };
-    acciones.appendChild(btnCheck);
-
-    // Botón ✗ eliminar (para todos)
-    const btnX = document.createElement('button');
-    btnX.className = 'cal-btn-x';
-    btnX.textContent = '✕';
-    btnX.title = 'Eliminar';
-    btnX.onclick = (e) => {
-        e.stopPropagation();
-        eliminarEntradaCalendario(entradaId, esManual, mes, nombre);
-    };
-    acciones.appendChild(btnX);
-
-    div.appendChild(acciones);
-    return div;
-}
-
-function getTipoClass(tipo) {
-    if (tipo === 'preventivo' || tipo === 'manual-preventivo') return 'preventivo';
-    if (tipo === 'metrologia' || tipo === 'manual-metrologia') return 'metrologia';
-    return 'otro';
-}
-
-// ── Tachar / destachar una entrada ──
-async function toggleTachado(clave, div, btn) {
-    try {
-        if (tachados[clave]) {
-            // Destachar
-            await db.collection('calendario-tachados').doc(clave).delete();
-            delete tachados[clave];
-            div.classList.remove('cal-tachado');
-            btn.classList.remove('activo');
-            btn.title = 'Marcar como realizado';
-        } else {
-            // Tachar
-            await db.collection('calendario-tachados').doc(clave).set({ clave, anio: anioCalendario });
-            tachados[clave] = true;
-            div.classList.add('cal-tachado');
-            btn.classList.add('activo');
-            btn.title = 'Desmarcar';
-        }
-    } catch (e) {
-        mostrarToast('Error al guardar estado', 'error');
-    }
-}
-
-// ── Eliminar entrada ──
-async function eliminarEntradaCalendario(entradaId, esManual, mes, nombre) {
-    if (!confirm(`¿Eliminar "${nombre}" de este mes?`)) return;
-
-    try {
-        if (esManual === true || esManual === 'true') {
-            // Eliminar de Firestore (entradas manuales)
-            const docId = entradaId.replace('manual-', '');
-            await db.collection('calendario-manual').doc(docId).delete();
-            // Quitar del cache local
-            if (entradasManuales[mes]) {
-                entradasManuales[mes] = entradasManuales[mes].filter(e => e.id !== docId);
-            }
-        } else {
-            // Entrada automática: extraer clienteId y tipo
-            // entradaId ejemplo: auto-prev1-abc123, auto-prev2-abc123, auto-met-abc123
-            let campo = '';
-            if (entradaId.startsWith('auto-prev1-')) campo = 'prevCiclo1';
-            else if (entradaId.startsWith('auto-prev2-')) campo = 'prevCiclo2';
-            else if (entradaId.startsWith('auto-met-')) campo = 'metrologia';
-
-            if (campo) {
-                const clienteId = entradaId.replace('auto-prev1-', '').replace('auto-prev2-', '').replace('auto-met-', '');
-                const update = {};
-                update[campo] = '';
-                await db.collection('clientes').doc(clienteId).update(update);
-                // Actualizar cache local
-                const cli = clientesCalendario.find(c => c.id === clienteId);
-                if (cli) cli[campo] = '';
-            }
-        }
-
-        mostrarToast('Entrada eliminada', 'success');
-        renderizarCalendario();
-    } catch (e) {
-        mostrarToast('Error al eliminar: ' + e.message, 'error');
-    }
-}
-
-// ── Abrir modal agregar entrada manual ──
-function abrirModalCalendario(mes) {
-    mesModalActual = mes;
-    document.getElementById('modalCalendarioTitulo').textContent =
-        `Agregar en ${MESES_NOMBRES[mes - 1]}`;
-    document.getElementById('calEntradaNombre').value = '';
-    document.getElementById('calEntradaTipo').value = 'manual-preventivo';
-    document.getElementById('modalCalendario').style.display = 'block';
-}
-
-window.cerrarModalCalendario = function() {
-    document.getElementById('modalCalendario').style.display = 'none';
-    mesModalActual = null;
-}
-
-// ── Guardar entrada manual ──
-window.guardarEntradaManual = async function() {
-    const nombre = document.getElementById('calEntradaNombre').value.trim().toUpperCase();
-    const tipo = document.getElementById('calEntradaTipo').value;
-
-    if (!nombre) {
-        mostrarToast('Por favor ingresa un nombre', 'warning');
-        return;
-    }
-    if (!mesModalActual) return;
-
-    try {
-        const docRef = await db.collection('calendario-manual').add({
-            mes: mesModalActual,
-            nombre,
-            tipo,
-            creadoEn: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        if (!entradasManuales[mesModalActual]) entradasManuales[mesModalActual] = [];
-        entradasManuales[mesModalActual].push({ id: docRef.id, nombre, tipo });
-
-        cerrarModalCalendario();
-        renderizarCalendario();
-        mostrarToast('Entrada agregada', 'success');
-    } catch (e) {
-        mostrarToast('Error al guardar: ' + e.message, 'error');
-    }
-}
-
-// ── Cambiar año ──
-window.cambiarAnioCalendario = function(delta) {
-    anioCalendario += delta;
-    renderizarCalendario();
-}
-
