@@ -486,6 +486,9 @@ document.getElementById('formCliente').addEventListener('submit', async function
         direccion: document.getElementById('clienteDireccion').value,
         telefono: document.getElementById('clienteTelefono').value,
         correo: document.getElementById('clienteCorreo').value,
+        prevCiclo1: document.getElementById('clientePrevCiclo1').value || '',
+        prevCiclo2: document.getElementById('clientePrevCiclo2').value || '',
+        metrologia: document.getElementById('clienteMetrologia').value || '',
         fechaCreacion: firebase.firestore.FieldValue.serverTimestamp(),
         creadoPor: usuarioActual.email
     };
@@ -1123,9 +1126,9 @@ window.abrirModalEditarCliente = function(id) {
                 document.getElementById('editClienteCorreo').value = cliente.correo;
 
                 // NUEVOS CAMPOS
-                document.getElementById('editClientePrevCiclo1').value = cliente.prevCiclo1 || '';
-                document.getElementById('editClientePrevCiclo2').value = cliente.prevCiclo2 || '';
-                document.getElementById('editClienteMetrologia').value = cliente.metrologia || '';
+                document.getElementById('editClientePrevCiclo1').value = cliente.prevCiclo1;
+                document.getElementById('editClientePrevCiclo2').value = cliente.prevCiclo2;
+                document.getElementById('editClienteMetrologia').value = cliente.metrologia;
 
                 document.getElementById('modalEditarCliente').style.display = 'block';
             }
