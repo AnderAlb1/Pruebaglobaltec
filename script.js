@@ -4247,7 +4247,9 @@ function validarFormulario(formulario) {
     
     return true;
 }
-/ ── Variables globales del calendario ──
+
+
+
 let anioCalendario = new Date().getFullYear();
 const anioInicial = new Date().getFullYear(); // Para resetear al salir/entrar
 let mesModalActual = null; // { mes: number }
