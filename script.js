@@ -4402,22 +4402,29 @@ function crearEntrada(nombre, tipo, entradaId, mes, esManual) {
     const clave = `${anioCalendario}-${mes}-${entradaId}`;
     const estaTachado = tachados[clave] === true;
 
+    // Definir etiqueta según tipo
+    let etiqueta = '';
+    if (entradaId.startsWith('auto-prev1-')) etiqueta = ' - CICLO 1';
+    else if (entradaId.startsWith('auto-prev2-')) etiqueta = ' - CICLO 2';
+    else if (entradaId.startsWith('auto-met-')) etiqueta = ' - METROLOGÍA';
+
+    const nombreCompleto = nombre + etiqueta;
+
     const div = document.createElement('div');
-    div.className = `cal-entrada cal-entrada-${getTipoClass(tipo)}`;
-    if (estaTachado) div.classList.add('cal-tachado');
+    div.className = `cal-entrada cal-entrada-preventivo`;
+    if (estaTachado) div.classList.add('realizado');
     div.dataset.clave = clave;
     div.dataset.entradaId = entradaId;
     div.dataset.esManual = esManual;
 
     const nombreSpan = document.createElement('span');
     nombreSpan.className = 'cal-entrada-nombre';
-    nombreSpan.textContent = nombre;
+    nombreSpan.textContent = nombreCompleto;
     div.appendChild(nombreSpan);
 
     const acciones = document.createElement('div');
     acciones.className = 'cal-entrada-acciones';
 
-    // Botón ✓ tachar/destachar
     const btnCheck = document.createElement('button');
     btnCheck.className = 'cal-btn-check' + (estaTachado ? ' activo' : '');
     btnCheck.textContent = '✓';
@@ -4428,7 +4435,6 @@ function crearEntrada(nombre, tipo, entradaId, mes, esManual) {
     };
     acciones.appendChild(btnCheck);
 
-    // Botón ✗ eliminar (para todos)
     const btnX = document.createElement('button');
     btnX.className = 'cal-btn-x';
     btnX.textContent = '✕';
@@ -4443,6 +4449,7 @@ function crearEntrada(nombre, tipo, entradaId, mes, esManual) {
     return div;
 }
 
+
 function getTipoClass(tipo) {
     if (tipo === 'preventivo' || tipo === 'manual-preventivo') return 'preventivo';
     if (tipo === 'metrologia' || tipo === 'manual-metrologia') return 'metrologia';
@@ -4453,17 +4460,15 @@ function getTipoClass(tipo) {
 async function toggleTachado(clave, div, btn) {
     try {
         if (tachados[clave]) {
-            // Destachar
             await db.collection('calendario-tachados').doc(clave).delete();
             delete tachados[clave];
-            div.classList.remove('cal-tachado');
+            div.classList.remove('realizado');
             btn.classList.remove('activo');
             btn.title = 'Marcar como realizado';
         } else {
-            // Tachar
             await db.collection('calendario-tachados').doc(clave).set({ clave, anio: anioCalendario });
             tachados[clave] = true;
-            div.classList.add('cal-tachado');
+            div.classList.add('realizado');
             btn.classList.add('activo');
             btn.title = 'Desmarcar';
         }
@@ -4471,6 +4476,7 @@ async function toggleTachado(clave, div, btn) {
         mostrarToast('Error al guardar estado', 'error');
     }
 }
+
 
 // ── Eliminar entrada ──
 async function eliminarEntradaCalendario(entradaId, esManual, mes, nombre) {
