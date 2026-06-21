@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Reportes de Mantenimiento</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+   
+    
+    <!-- PANTALLA DE LOGIN -->
+    <div id="pantalla-login" class="pantalla-login">
+        <div class="login-container">
+            <h1>⚙️ GlobalTecServices</h1>
+            <h2>Iniciar Sesión</h2>
+            
+            <form id="formLogin" novalidate>
+                <label>Correo Electrónico:</label>
+                <input type="email" id="loginEmail" required placeholder="usuario@ejemplo.com">
+                
+                <label>Contraseña:</label>
+                <input type="password" id="loginPassword" required placeholder="••••••••">
+                
+                <div class="checkbox-mantener">
+                    <label>
+                        <input type="checkbox" id="mantenerSesion">
+                        Mantener sesión iniciada
+                    </label>
+                </div>
+                
+                <button type="submit">Iniciar Sesión</button>
+                
+                <p id="errorLogin" class="error-mensaje"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- PANTALLA PRINCIPAL (oculta hasta login exitoso) -->
+    <div id="app-principal" style="display: none;">
+    
+    <!-- HEADER SUPERIOR -->
+    <header class="header-top">
+        <button class="menu-toggle" onclick="toggleMenuLateral()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <h1 class="header-title">⚙️ GlobalTec Services</h1>
+        <div class="header-spacer"></div>
+    </header>
+
+    <!-- PESTAÑAS SUPERIORES -->
+    <div class="pestanas-superiores" id="pestanasSuperiores" style="display: none;">
+        <button class="pestaña-btn activa" onclick="mostrarPestana('clientes')" data-pestaña="clientes">
+            <span class="icon">👥</span> Clientes
+        </button>
+        <button class="pestaña-btn" onclick="mostrarPestana('equipos')" data-pestaña="equipos">
+            <span class="icon">🔧</span> Equipos
+        </button>
+        <button class="pestaña-btn" onclick="mostrarPestana('reporte')" data-pestaña="reporte">
+            <span class="icon">📄</span> Generar Reporte
+        </button>
+    </div>
+    <!-- PESTAÑAS DE CONFIGURACIÓN -->
+    <div class="pestanas-configuracion" id="pestanasConfiguracion" style="display: none;">
+        <button class="pestaña-config-btn activa" onclick="mostrarPestanaConfig('logo')" data-pestaña-config="logo">
+            <span class="icon">🏢</span> Logo Empresa
+        </button>
+        <button class="pestaña-config-btn" onclick="mostrarPestanaConfig('tecnicos')" data-pestaña-config="tecnicos">
+            <span class="icon">👨‍🔧</span> Técnicos
+        </button>
+        <button class="pestaña-config-btn" onclick="mostrarPestanaConfig('usuarios')" data-pestaña-config="usuarios">
+            <span class="icon">👥</span> Usuarios
+        </button>
+    </div>
+
+    <!-- MENÚ LATERAL -->
+    <nav class="menu-lateral" id="menuLateral">
+        <div class="menu-lateral-content">
+            <button onclick="mostrarServicio('biomedico')" class="btn-menu-lateral activo" data-servicio="biomedico">
+                <span class="icon">⚕️</span> Servicio Biomédico
+            </button>
+            <button onclick="mostrarServicio('refrigeracion')" class="btn-menu-lateral" data-servicio="refrigeracion">
+                <span class="icon">❄️</span> Servicio Refrigeración
+            </button>
+            <button onclick="mostrarSeccion('configuracion')" class="btn-menu-lateral">
+                <span class="icon">⚙️</span> Configuración
+            </button>
+            
+            <div class="menu-divider"></div>
+            
+            <button onclick="cerrarSesion()" class="btn-menu-lateral btn-logout">
+                <span class="icon">🚪</span> Cerrar Sesión
+            </button>
+        </div>
+    </nav>
+
+    <!-- OVERLAY PARA CERRAR MENÚ EN MÓVIL -->
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenuLateral()"></div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="contenido-principal">
+
+    <!-- SECCIÓN: GESTIÓN DE CLIENTES -->
+    <div id="seccion-clientes" class="seccion-contenido oculto">
+        <div class="contenedor">
+            <h1>Gestión de Clientes - Biomédico</h1>
+            
+            <div class="formulario-card">
+                <h2>Agregar Nuevo Cliente</h2>
+                <form id="formCliente" novalidate>
+                    <label>Nombre:</label>
+                    <input type="text" id="clienteNombre" required>
+                    
+                    <label>Dirección:</label>
+                    <input type="text" id="clienteDireccion" required>
+                    
+                    <label>Teléfono:</label>
+                    <input type="tel" id="clienteTelefono" required>
+                    
+                    <label>Correo Electrónico:</label>
+                    <input type="email" id="clienteCorreo">
+                                        
+                    <button type="submit">Agregar Cliente</button>
+                </form>
+            </div>
+
+            <div class="lista-card">
+                <!-- HEADER DESPLEGABLE -->
+                <div class="lista-header" onclick="toggleLista('listaClientes')">
+                    <div class="lista-header-izquierda">
+                        <h2>Mostrar Clientes Registrados</h2>
+                        <span class="contador-badge" id="contadorClientes">0</span>
+                        <span class="toggle-icon" id="iconListaClientes">⤵</span>
+                    </div>
+                </div>
+                
+                <!-- CONTENIDO DESPLEGABLE -->
+                <div id="contenedorListaClientes" class="lista-contenido oculta-lista">
+                    <!-- BUSCADOR DE CLIENTES -->
+                    <div class="buscador-container">
+                        <input type="text" 
+                            id="buscarCliente" 
+                            class="input-buscador" 
+                            placeholder="🔍 Buscar por nombre, dirección, teléfono o correo..."
+                            onkeyup="buscarClientes(this.value)">
+                    </div>
+                    
+                    <div id="listaClientes"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR CLIENTE -->
+    <div id="modalEditarCliente" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModalCliente()">&times;</span>
+            <h2>Editar Cliente</h2>
+            <form id="formEditarCliente" novalidate>
+                <input type="hidden" id="editClienteId">
+                
+                <label>Nombre:</label>
+                <input type="text" id="editClienteNombre" required>
+                
+                <label>Dirección:</label>
+                <input type="text" id="editClienteDireccion" required>
+                
+                <label>Teléfono:</label>
+                <input type="tel" id="editClienteTelefono" required>
+                
+                <label>Correo Electrónico:</label>
+                <input type="email" id="editClienteCorreo">
+                                
+                <button type="submit">Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR EQUIPO -->
+    <div id="modalEditarEquipo" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModalEquipo()">&times;</span>
+            <h2>Editar Equipo</h2>
+            <form id="formEditarEquipo" novalidate>
+                <input type="hidden" id="editEquipoId">
+                
+                <label>Cliente:</label>
+                <select id="editEquipoCliente" required disabled>
+                    <option value="">-- Cliente --</option>
+                </select>
+                
+                <label>Nombre del Equipo:</label>
+                <input type="text" id="editEquipoNombre" required>
+                
+                <label>Marca:</label>
+                <input type="text" id="editEquipoMarca" required>
+                
+                <label>Modelo:</label>
+                <input type="text" id="editEquipoModelo" required>
+                
+                <label>Serie:</label>
+                <input type="text" id="editEquipoSerie" required>
+                
+                <label>Ubicación:</label>
+                <input type="text" id="editEquipoUbicacion" required>
+                
+                <label>Accesorios (separados por coma):</label>
+                <input type="text" id="editEquipoAccesorios">
+                
+                <button type="submit">Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR CLIENTE REFRIGERACIÓN -->
+<div id="modalEditarClienteRefrigeracion" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalClienteRefrigeracion()">&times;</span>
+        <h2>Editar Cliente - Refrigeración</h2>
+        <form id="formEditarClienteRefrigeracion" novalidate>
+            <input type="hidden" id="editClienteIdRefrigeracion">
+            
+            <label>Nombre:</label>
+            <input type="text" id="editClienteNombreRefrigeracion" required>
+            
+            <label>Dirección:</label>
+            <input type="text" id="editClienteDireccionRefrigeracion" required>
+            
+            <label>Teléfono:</label>
+            <input type="tel" id="editClienteTelefonoRefrigeracion" required>
+            
+            <label>Correo Electrónico:</label>
+            <input type="email" id="editClienteCorreoRefrigeracion">
+            
+            <button type="submit">Guardar Cambios</button>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL EDITAR EQUIPO REFRIGERACIÓN -->
+<div id="modalEditarEquipoRefrigeracion" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalEquipoRefrigeracion()">&times;</span>
+        <h2>Editar Equipo - Refrigeración</h2>
+        <form id="formEditarEquipoRefrigeracion" novalidate>
+            <input type="hidden" id="editEquipoIdRefrigeracion">
+            
+            <label>Cliente:</label>
+            <select id="editEquipoClienteRefrigeracion" required disabled>
+                <option value="">-- Cliente --</option>
+            </select>
+    
+            <label>Nombre del Equipo:</label>
+            <input type="text" id="editEquipoNombreRefrigeracion" required>
+            
+            <label>Marca:</label>
+            <input type="text" id="editEquipoMarcaRefrigeracion" required>
+            
+            <label>Tipo:</label>
+            <input type="text" id="editEquipoTipoRefrigeracion" required>
+            
+            <label>Modelo:</label>
+            <input type="text" id="editEquipoModeloRefrigeracion" required>
+            
+            <label>Serie:</label>
+            <input type="text" id="editEquipoSerieRefrigeracion" required>
+            
+            <label>Capacidad:</label>
+            <input type="text" id="editEquipoCapacidadRefrigeracion" required>
+            
+            <label>Refrigerante:</label>
+            <input type="text" id="editEquipoRefrigeranteRefrigeracion" required>
+            
+            <label>Ubicación:</label>
+            <input type="text" id="editEquipoUbicacionRefrigeracion" required>
+            
+            <button type="submit">Guardar Cambios</button>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL EDITAR TÉCNICO -->
+<div id="modalEditarTecnico" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalTecnico()">&times;</span>
+        <h2>Editar Técnico</h2>
+        <form id="formEditarTecnico" novalidate>
+            <input type="hidden" id="editTecnicoId">
+            
+            <label>Nombre Completo:</label>
+            <input type="text" id="editTecnicoNombre" required>
+            
+            <label>Cargo:</label>
+            <input type="text" id="editTecnicoCargo" required>
+            
+            <label>Registro INVIMA:</label>
+            <input type="text" id="editTecnicoRegistroInvima" required>
+            
+            <label>Firma del Técnico:</label>
+            <div class="file-input-wrapper">
+                <input type="file" id="editTecnicoFirma" accept="image/*">
+                <p class="file-help-text">Opcional: cambiar firma</p>
+            </div>
+            <div id="editFirmaPreviewTecnico" class="logo-preview"></div>
+            
+            <button type="submit">Guardar Cambios</button>
+        </form>
+    </div>
+</div>
+
+    <!-- SECCIÓN: GESTIÓN DE EQUIPOS -->
+    <div id="seccion-equipos" class="seccion-contenido oculto">
+        <div class="contenedor">
+            <h1>Gestión de Equipos - Biomédico</h1>
+            
+
+            <div class="formulario-card">
+                <h2>Agregar Nuevo Equipo</h2>
+                
+                <!-- BOTONES DE SELECCIÓN -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button type="button" onclick="mostrarFormularioManual()" class="btn-modo-equipo activo" id="btnManual">
+                        ✏️ Agregar Manualmente
+                    </button>
+                    <button type="button" onclick="mostrarFormularioExcel()" class="btn-modo-equipo" id="btnExcel">
+                        📊 Agregar desde Excel
+                    </button>
+                </div>
+                
+                <!-- SELECTOR DE CLIENTE (COMÚN PARA AMBOS) -->
+                <label>Seleccionar Cliente:</label>
+                <select id="equipoCliente" required>
+                    <option value="">-- Seleccione un cliente --</option>
+                </select>
+                
+                <!-- FORMULARIO MANUAL (VISIBLE POR DEFECTO) -->
+                <div id="formularioManual">
+                    <form id="formEquipo" novalidate>
+                        <label>Nombre del Equipo:</label>
+                        <input type="text" id="equipoNombre" placeholder="Ej: UNIDAD ODONTOLÓGICA" required>
+                        
+                        <label>Marca:</label>
+                        <input type="text" id="equipoMarca" required>
+                        
+                        <label>Modelo:</label>
+                        <input type="text" id="equipoModelo" required>
+                        
+                        <label>Serie:</label>
+                        <input type="text" id="equipoSerie" required>
+                        
+                        <label>Ubicación:</label>
+                        <input type="text" id="equipoUbicacion" placeholder="Ej: CONSULTORIO 1 (Opcional)">
+                        
+                        <label>Accesorios (separados por coma):</label>
+                        <input type="text" id="equipoAccesorios" placeholder="Ej: LÁMPARA AUXILIAR, EYECTOR, ESCUPIDERA">
+                        
+                        <button type="submit">Agregar Equipo</button>
+                    </form>
+                </div>
+                
+                <!-- FORMULARIO EXCEL (OCULTO POR DEFECTO) -->
+                <div id="formularioExcel" style="display: none;">
+                    <div class="info-box">
+                        <p><strong>📋 Formato del archivo Excel:</strong></p>
+                        <p>El archivo debe tener las siguientes columnas (en este orden):</p>
+                        <p><strong>1. Nombre del Equipo | 2. Marca | 3. Modelo | 4. Serie | 5. Ubicación | 6. Accesorios</strong></p>
+                        <p>• Los accesorios deben estar separados por comas dentro de la celda</p>
+                        <p>• La primera fila puede ser de encabezados (se omitirá automáticamente)</p>
+                    </div>
+                    
+                    <label>Seleccionar archivo Excel:</label>
+                    <input type="file" id="archivoExcel" accept=".xlsx, .xls" style="margin-bottom: 15px;">
+                    
+                    <div id="vistaPrevia" style="display: none; margin: 15px 0;">
+                        <h3 style="color: #4CAF50; font-size: 14px;">Vista Previa de Equipos a Importar:</h3>
+                        <div id="contenidoVistaPrevia" style="max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 5px; font-size: 12px;"></div>
+                    </div>
+                    
+                    <button type="submit" onclick="procesarExcel()" id="btnProcesarExcel" disabled>Agregar Equipos desde Excel</button>
+                </div>
+            </div>
+
+            <div class="lista-card">
+                <div class="lista-header" onclick="toggleLista('listaEquipos')">
+                    <div class="lista-header-izquierda">
+                        <h2>Mostar Equipos Registrados</h2>
+                        <span class="contador-badge" id="contadorEquipos">0</span>
+                        <span class="toggle-icon" id="iconListaEquipos">⤵</span>
+                    </div>
+                </div>
+                
+                <div id="contenedorListaEquipos" class="lista-contenido oculta-lista">
+                    <div class="buscador-container">
+                        <input type="text" 
+                            id="buscarEquipo" 
+                            class="input-buscador" 
+                            placeholder="🔍 Buscar por nombre, marca, modelo, serie, ubicación o cliente..."
+                            onkeyup="buscarEquipos(this.value)">
+                    </div>
+                    
+                    <div id="listaEquipos"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN: GENERAR REPORTE -->
+    <div id="seccion-reporte" class="seccion-contenido">
+        <div class="contenedor">
+            <h1>Generar Reporte de Servicio - Biomédico</h1>
+            
+            <form id="formReporte" novalidate>
+                
+                <!-- Selección de Cliente y Equipo -->
+                <div class="seccion">
+                    <h2>1. Datos Básicos</h2>
+                    
+                    <label>Seleccionar Cliente:</label>
+                    <select id="reporteCliente" required onchange="cargarEquipos()">
+                        <option value="">-- Seleccione un cliente --</option>
+                    </select>
+                    
+                    <label>Seleccionar Equipo:</label>
+                    <select id="reporteEquipo" required disabled>
+                        <option value="">-- Primero seleccione un cliente --</option>
+                    </select>
+                    
+                    <label>Fecha de Servicio:</label>
+                    <input type="date" id="reporteFecha" required>
+                    
+                    <label>Técnico que realizó el servicio:</label>
+                    <select id="reporteTecnico" required>
+                        <option value="">-- Seleccione un técnico --</option>
+                    </select>
+
+                </div>
+
+                <!-- Motivo del Servicio -->
+                <div class="seccion">
+                    <h2>2. Servicio Por</h2>
+                    <div class="radio-group">
+                        <label><input type="radio" name="servicioPor" value="CONTRATO" required> CONTRATO</label>
+                        <label><input type="radio" name="servicioPor" value="EVENTO"> EVENTO</label>
+                    </div>
+                </div>
+
+                <!-- Tipo de Mantenimiento -->
+                <div class="seccion">
+                    <h2>3. Tipo de Mantenimiento</h2>
+                    <div class="radio-group">
+                        <label><input type="radio" name="tipoMto" value="PREVENTIVO" required> PREVENTIVO</label>
+                        <label><input type="radio" name="tipoMto" value="CORRECTIVO"> CORRECTIVO</label>
+                        <label><input type="radio" name="tipoMto" value="DIAGNOSTICO"> DIAGNOSTICO</label>
+                        <label><input type="radio" name="tipoMto" value="INSTALACION"> INSTALACION</label>
+                        <label><input type="radio" name="tipoMto" value="DESINSTALACION"> DESINSTALACION</label>
+                        <label><input type="radio" name="tipoMto" value="BAJADELEQUIPO "> BAJA DEL EQUIPO</label>
+                    </div>
+                </div>
+
+                <!-- Estado del Equipo -->
+                <div class="seccion">
+                    <h2>4. Estado del Equipo</h2>
+                    <div class="radio-group">
+                        <label><input type="radio" name="estadoEquipo" value="FUNCIONANDO" required> FUNCIONANDO</label>
+                        <label><input type="radio" name="estadoEquipo" value="CON FALLA"> CON FALLA</label>
+                        <label><input type="radio" name="estadoEquipo" value="FUERA DE SERVICIO"> FUERA DE SERVICIO</label>
+                    </div>
+                </div>
+
+                <!-- Estado de Accesorios -->
+                <div class="seccion">
+                    <h2>5. Estado de Accesorios</h2>
+                    <div id="accesoriosContainer">
+                        <p class="texto-info">Seleccione un equipo para ver sus accesorios</p>
+                    </div>
+                </div>
+
+                <!-- Tareas Ejecutadas -->
+                <div class="seccion">
+                    <h2>6. Tareas Ejecutadas</h2>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" value="AJUSTE" data-required-group="tareas"> AJUSTE</label>
+                        <label><input type="checkbox" value="CONFIGURACIÓN" data-required-group="tareas"> CONFIGURACIÓN</label>
+                        <label><input type="checkbox" value="REPARACIÓN" data-required-group="tareas"> REPARACIÓN</label>
+                        <label><input type="checkbox" value="EVALUACIÓN" data-required-group="tareas"> EVALUACIÓN</label>
+                        <label><input type="checkbox" value="LUBRICACIÓN" data-required-group="tareas"> LUBRICACIÓN</label>
+                        <label><input type="checkbox" value="TEST TEMPERATURA" data-required-group="tareas"> TEST TEMPERATURA</label>
+                        <label><input type="checkbox" value="LIMPIEZA INTERNA" data-required-group="tareas"> LIMPIEZA INTERNA</label>
+                        <label><input type="checkbox" value="LIMPIEZA EXTERNA" data-required-group="tareas"> LIMPIEZA EXTERNA</label>
+                        <label><input type="checkbox" value="VERIFICACION DE FUGAS" data-required-group="tareas"> VERIFICACION DE FUGAS</label>
+                    </div>
+                </div>
+
+                <!-- Verificación de Parámetros -->
+                <div class="seccion">
+                    <h2>7. Verificación de Parámetros</h2>
+                    <div id="verificacionContainer"></div>
+                    <textarea id="verificacionParametros" rows="3" placeholder="Se completará automáticamente según el equipo seleccionado"></textarea>
+                </div>
+
+                <!-- Falla Reportada -->
+                <div class="seccion">
+                    <h2>8. Falla Reportada</h2>
+                    <textarea id="fallaReportada" rows="3" placeholder="Describa la falla reportada"></textarea>
+                </div>
+
+                <!-- Actividad de Mantenimiento -->
+                <div class="seccion">
+                    <h2>9. Actividad de Mantenimiento</h2>
+                    <textarea id="actividadMantenimiento" rows="6" placeholder="Describa detalladamente las actividades realizadas..." required></textarea>
+                </div>
+
+                <!-- Observaciones -->
+                <div class="seccion">
+                    <h2>10. Observaciones</h2>
+                    <textarea id="observaciones" rows="4" placeholder="Observaciones finales del servicio"></textarea>
+                </div>
+
+                <!-- Evidencia Fotográfica -->
+                <div class="seccion">
+                    <h2>11. Evidencia Fotográfica</h2>
+                    <input type="file" id="fotos" accept="image/*" multiple>
+                    <div id="previsualizacion"></div>
+                </div>
+
+                <button type="submit">Descargar Reporte</button>
+            </form>
+        </div>
+    </div>
+    
+
+    <!-- SECCIÓN: CONFIGURACION -->
+        <div id="seccion-configuracion" class="seccion-contenido oculto">
+            <div class="contenedor">
+                
+                <!-- SUB-SECCIÓN: Logo de la Empresa -->
+                <div id="config-logo" class="config-subseccion">
+                    <h1>Configuración de Logo de la Empresa</h1>
+                    
+                    <div class="formulario-card">
+                        <h2>Logo de la Empresa</h2>
+                        <form id="formConfiguracionLogo" novalidate>
+                            <label>Logo de la empresa:</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="logoEmpresa" accept="image/*">
+                                <p class="file-help-text">Seleccione el logo que aparecerá en los reportes</p>
+                            </div>
+                            <div id="previewLogo" class="logo-preview"></div>
+
+                            <button type="submit">Guardar Logo</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- SUB-SECCIÓN: Técnicos -->
+                <div id="config-tecnicos" class="config-subseccion oculto">
+                    <h1>Gestión de Técnicos</h1>
+                    
+                    <div class="formulario-card">
+                        <h2>Agregar Nuevo Técnico</h2>
+                        <form id="formTecnico" novalidate>
+                            <label>Nombre Completo:</label>
+                            <input type="text" id="tecnicoNombre" required>
+                            
+                            <label>Cargo:</label>
+                            <input type="text" id="tecnicoCargo" required>
+
+                            <label>Registro INVIMA:</label>
+                            <input type="text" id="tecnicoRegistroInvima" required>
+                            
+                            <label>Firma del Técnico:</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="tecnicoFirma" accept="image/*" required>
+                                <p class="file-help-text">La firma se convertirá automáticamente a Base64</p>
+                            </div>
+                            <div id="firmaPreviewTecnico" class="logo-preview"></div>
+                            
+                            <button type="submit">Agregar Técnico</button>
+                        </form>
+                    </div>
+
+                    <div class="lista-card">
+                        <h2>Técnicos Registrados</h2>
+                        <div id="listaTecnicos"></div>
+                    </div>
+                </div>
+
+                <!-- SUB-SECCIÓN: Usuarios (mover la existente aquí) -->
+                <div id="config-usuarios" class="config-subseccion oculto">
+                    <h1>Gestión de Usuarios</h1>
+                    
+                    <div id="solo-admin-usuarios" style="display: none;">
+                        <div class="formulario-card">
+                            <h2>Crear Nuevo Usuario</h2>
+                            <form id="formUsuario" novalidate>
+                                <label>Correo Electrónico:</label>
+                                <input type="email" id="usuarioEmail" required placeholder="usuario@ejemplo.com">
+                                
+                                <label>Contraseña:</label>
+                                <input type="password" id="usuarioPassword" required placeholder="Mínimo 6 caracteres">
+                                
+                                <button type="submit">Crear Usuario</button>
+                            </form>
+                        </div>
+
+                        <div class="lista-card">
+                            <h2>Usuarios Registrados</h2>
+                            <div id="listaUsuarios"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="no-admin-usuarios">
+                        <p class="texto-info">Solo el administrador puede gestionar usuarios.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+    <!-- ========================================== -->
+    <!-- SECCIONES PARA REFRIGERACIÓN -->
+    <!-- ========================================== -->
+    
+    <!-- SECCIÓN: CLIENTES REFRIGERACIÓN -->
+    <div id="seccion-clientes-refrigeracion" class="seccion-contenido oculto">
+        <div class="contenedor">
+            <h1>Gestión de Clientes - Refrigeración</h1>
+            
+            <div class="formulario-card">
+                <h2>Agregar Nuevo Cliente</h2>
+                <form id="formClienteRefrigeracion" novalidate>
+                    <label>Nombre:</label>
+                    <input type="text" id="clienteNombreRefrigeracion" required>
+                    
+                    <label>Dirección:</label>
+                    <input type="text" id="clienteDireccionRefrigeracion" required>
+                    
+                    <label>Teléfono:</label>
+                    <input type="tel" id="clienteTelefonoRefrigeracion" required>
+                    
+                    <label>Correo Electrónico:</label>
+                    <input type="email" id="clienteCorreoRefrigeracion">
+                    
+                    <button type="submit">Agregar Cliente</button>
+                </form>
+            </div>
+
+            <div class="lista-card">
+                <!-- HEADER DESPLEGABLE -->
+                <div class="lista-header" onclick="toggleLista('listaClientesRefrigeracion')">
+                    <div class="lista-header-izquierda">
+                        <h2>Mostrar Clientes Registrados</h2>
+                        <span class="contador-badge" id="contadorClientesRefrigeracion">0</span>
+                        <span class="toggle-icon" id="iconListaClientesRefrigeracion">⤵</span>
+                    </div>
+                </div>
+                
+                <!-- CONTENIDO DESPLEGABLE -->
+                <div id="contenedorListaClientesRefrigeracion" class="lista-contenido oculta-lista">
+                    <div class="buscador-container">
+                        <input type="text" 
+                            id="buscarClienteRefrigeracion" 
+                            class="input-buscador" 
+                            placeholder="🔍 Buscar por nombre, dirección, teléfono o correo..."
+                            onkeyup="buscarClientesRefrigeracion(this.value)">
+                    </div>
+                    
+                    <div id="listaClientesRefrigeracion"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+<div id="listaClientesRefrigeracion"></div>
+    <!-- SECCIÓN: EQUIPOS REFRIGERACIÓN -->
+    <div id="seccion-equipos-refrigeracion" class="seccion-contenido oculto">
+        <div class="contenedor">
+            <h1>Gestión de Equipos - Refrigeración</h1>
+            
+            <div class="formulario-card">
+
+                <h2>Agregar Nuevo Equipo</h2>
+                
+                <!-- BOTONES DE SELECCIÓN -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button type="button" onclick="mostrarFormularioManualRefrigeracion()" class="btn-modo-equipo activo" id="ImportarManualRefrigeracion">
+                        ✏️ Agregar Manualmente
+                    </button>
+                    <button type="button" onclick="mostrarFormularioExcelRefrigeracion()" class="btn-modo-equipo" id="importarExcelRefrigeracion">
+                        📊 Agregar desde Excel
+                    </button>
+                </div>
+
+                <label>Cliente:</label>
+                    <select id="equipoClienteRefrigeracion" required>
+                        <option value="">-- Seleccione un cliente --</option>
+                    </select>
+
+
+                <form id="formEquipoRefrigeracion" novalidate>
+                    
+                    <label>Nombre del Equipo:</label>
+                    <input type="text" id="equipoNombreRefrigeracion" required >
+                    
+                    <label>Marca:</label>
+                    <input type="text" id="equipoMarcaRefrigeracion" required >
+                    
+                    <label>Tipo:</label>
+                    <input type="text" id="equipoTipoRefrigeracion" required >
+                    
+                    <label>Modelo:</label>
+                    <input type="text" id="equipoModeloRefrigeracion" required >
+                    
+                    <label>Serie:</label>
+                    <input type="text" id="equipoSerieRefrigeracion" required>
+                    
+                    <label>Capacidad:</label>
+                    <input type="text" id="equipoCapacidadRefrigeracion" required placeholder="Ej: 3 TON, 1500 BTU, 500 Litros">
+                    
+                    <label>Refrigerante:</label>
+                    <input type="text" id="equipoRefrigeranteRefrigeracion" required placeholder="Ej: R-404A, R-410A, R-134A">
+                    
+                    <label>Ubicación:</label>
+                    <input type="text" id="equipoUbicacionRefrigeracion" required>
+                    
+                    <button type="submit">Agregar Equipo</button>
+                </form>
+
+                <!-- FORMULARIO EXCEL (OCULTO POR DEFECTO) -->
+                <div id="formularioExcelRefrigeracion" style="display: none;">
+                    <div class="info-box">
+                        <p><strong>📋 Formato del archivo Excel:</strong></p>
+                        <p>El archivo debe tener las siguientes columnas (en este orden):</p>
+                        <p><strong>1. Nombre del Equipo | 2. Marca | 3. Tipo | 4. Modelo | 5. Serie | 6. Capacidad | 7. Refrigerante | 8. Ubicación </strong></p>
+                        <p>• La primera fila puede ser de encabezados (se omitirá automáticamente)</p>
+                    </div>
+                    
+                    <label>Seleccionar archivo Excel:</label>
+                    <input type="file" id="archivoExcelRefrigeracion" accept=".xlsx, .xls" style="margin-bottom: 15px;">
+                    
+                    <div id="vistaPreviaRefrigeracion" style="display: none; margin: 15px 0;">
+                        <h3 style="color: #4CAF50; font-size: 14px;">Vista Previa de Equipos a Importar:</h3>
+                        <div id="contenidoVistaPreviaRefrigeracion" style="max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 5px; font-size: 12px;"></div>
+                    </div>
+                    
+                    <button type="submit" onclick="procesarExcelRefrigeracion()" id="btnProcesarExcelRefrigeracion" disabled>Agregar Equipos desde Excel</button>
+                </div>
+                
+            </div>
+
+            <div class="lista-card">
+                <!-- HEADER DESPLEGABLE -->
+                <div class="lista-header" onclick="toggleLista('listaEquiposRefrigeracion')">
+                    <div class="lista-header-izquierda">
+                        <h2>Mostar Equipos Registrados</h2>
+                        <span class="contador-badge" id="contadorEquiposRefrigeracion">0</span>
+                        <span class="toggle-icon" id="iconListaEquiposRefrigeracion">⤵</span>
+                    </div>
+                </div>
+                
+                <!-- CONTENIDO DESPLEGABLE -->
+                <div id="contenedorListaEquiposRefrigeracion" class="lista-contenido oculta-lista">
+                    <div class="buscador-container">
+                        <input type="text" 
+                            id="buscarEquipoRefrigeracion" 
+                            class="input-buscador" 
+                            placeholder="🔍 Buscar por nombre, marca, modelo, serie, ubicación o cliente..."
+                            onkeyup="buscarEquiposRefrigeracion(this.value)">
+                    </div>
+                    
+                    <div id="listaEquiposRefrigeracion"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN: GENERAR REPORTE REFRIGERACIÓN -->
+    <div id="seccion-reporte-refrigeracion" class="seccion-contenido oculto">
+        <div class="contenedor">
+            <h1>Generar Reporte de Servicio - Refrigeración</h1>
+            
+            <form id="formReporteRefrigeracion" novalidate>
+                <div class="seccion">
+                    <h2>1. Datos Básicos</h2>
+                    <label>Cliente:</label>
+                    <select id="reporteClienteRefrigeracion" required onchange="cargarEquiposReporteRefrigeracion()">
+                        <option value="">-- Seleccione un cliente --</option>
+                    </select>
+                    
+                    <label>Equipo:</label>
+                    <select id="reporteEquipoRefrigeracion" required>
+                        <option value="">-- Primero seleccione un cliente --</option>
+                    </select>
+                    
+                    <label>Fecha de Servicio:</label>
+                    <input type="date" id="reporteFechaRefrigeracion" required>
+                    
+                    <label>Técnico que realizó el servicio:</label>
+                    <select id="reporteTecnicoRefrigeracion" required>
+                        <option value="">-- Seleccione un técnico --</option>
+                    </select>
+                
+                </div>
+
+                <div class="seccion">
+                    <h2>2. Servicio Por</h2>
+                    <div class="radio-group">
+                        <label><input type="radio" name="servicioPorRefrigeracion" value="CONTRATO" required> CONTRATO</label>
+                        <label><input type="radio" name="servicioPorRefrigeracion" value="EVENTO"> EVENTO</label>
+                    </div>
+                </div>
+
+                <div class="seccion">
+                    <h2>3. Tipo de Mantenimiento</h2>
+                    <div class="radio-group">
+                        <label><input type="radio" name="tipoMtoRefrigeracion" value="PREVENTIVO" required> PREVENTIVO</label>
+                        <label><input type="radio" name="tipoMtoRefrigeracion" value="CORRECTIVO"> CORRECTIVO</label>
+                        <label><input type="radio" name="tipoMtoRefrigeracion" value="DIAGNOSTICO"> DIAGNOSTICO</label>
+                        <label><input type="radio" name="tipoMtoRefrigeracion" value="INSTALACION"> INSTALACION</label>
+                    </div>
+                </div>
+
+                <div class="seccion">
+                    <h2>4. Estado del Equipo</h2>
+                    <div class="radio-group">
+                        <label><input type="radio" name="estadoEquipoRefrigeracion" value="FUNCIONANDO" required> FUNCIONANDO</label>
+                        <label><input type="radio" name="estadoEquipoRefrigeracion" value="CON FALLA"> CON FALLA</label>
+                        <label><input type="radio" name="estadoEquipoRefrigeracion" value="FUERA DE SERVICIO"> FUERA DE SERVICIO</label>
+                    </div>
+                </div>
+
+                <div class="seccion">
+                    <h2>5. Actividad de Mantenimiento</h2>
+                    <textarea id="actividadMantenimientoRefrigeracion" rows="6" placeholder="Describa detalladamente las actividades realizadas..." required></textarea>
+                </div>
+
+                <div class="seccion">
+                    <h2>6. Observaciones</h2>
+                    <textarea id="observacionesRefrigeracion" rows="4" placeholder="Observaciones finales del servicio"></textarea>
+                </div>
+
+                <div class="seccion">
+                    <h2>7. Evidencia Fotográfica</h2>
+                    <input type="file" id="fotosRefrigeracion" accept="image/*" multiple>
+                    <div id="previsualizacionRefrigeracion"></div>
+                </div>
+
+                <button type="submit">Descargar Reporte</button>
+            </form>
+        </div>
+    </div>
+
+
+    </main>
+    <!-- FIN contenido-principal -->
+
+</div>
+<!-- FIN app-principal -->
+
+    <!-- Firebase versión 8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    
+    <!-- PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Configuración Firebase -->
+    <script src="firebase-config.js"></script>
+    <!-- Librería para leer Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>          
+    
+    <!-- Tu código -->
+    <script src="script.js"></script>
+
+
+<div id="pantalla-cargando" class="pantalla-cargando">
+    <div class="loader-contenedor">
+        <div class="loader"></div>
+    </div>
+</div>
+
+</body>
+</html>
+
