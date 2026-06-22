@@ -4409,33 +4409,28 @@ function crearEntrada(nombre, tipo, entradaId, mes, esManual) {
     const estaTachado = tachados[clave] === true;
 
     // Definir etiqueta según tipo
+    let etiqueta = '';
+    if (entradaId.startsWith('auto-prev1-')) etiqueta = ' - <strong>CICLO 1</strong>';
+    else if (entradaId.startsWith('auto-prev2-')) etiqueta = ' - <strong>CICLO 2</strong>';
+    else if (entradaId.startsWith('auto-met-')) etiqueta = ' - <strong>METROLOGÍA</strong>';
+
+    const nombreCompleto = nombre + etiqueta;
+
+    const div = document.createElement('div');
+    let tipoClase = 'cal-entrada-otro';
+    if (tipo === 'preventivo' || tipo === 'manual-preventivo') tipoClase = 'cal-entrada-preventivo';
+    if (tipo === 'metrologia' || tipo === 'manual-metrologia') tipoClase = 'cal-entrada-metrologia';
+
+    div.className = `cal-entrada ${tipoClase}`;
+
+    if (estaTachado) div.classList.add('realizado');
+    div.dataset.clave = clave;
+    div.dataset.entradaId = entradaId;
+    div.dataset.esManual = esManual;
+
     const nombreSpan = document.createElement('span');
     nombreSpan.className = 'cal-entrada-nombre';
-
-    // Nombre del equipo (texto normal)
-    const textoNombre = document.createElement('span');
-    textoNombre.textContent = nombre;
-
-    // Etiqueta (negrita)
-    const etiqueta = document.createElement('strong');
-
-    if (entradaId.startsWith('auto-prev1-')) {
-        etiqueta.textContent = ' - Ciclo 1';
-    } else if (entradaId.startsWith('auto-prev2-')) {
-        etiqueta.textContent = ' - Ciclo 2';
-    } else if (entradaId.startsWith('auto-met-')) {
-        etiqueta.textContent = ' - Metrología';
-    } else if (tipo === 'manual-preventivo') {
-        etiqueta.textContent = ' - Mantenimiento Preventivo';
-    } else if (tipo === 'manual-metrologia') {
-        etiqueta.textContent = ' - Metrología';
-    } else {
-        etiqueta.textContent = ' - Otro';
-    }
-
-    nombreSpan.appendChild(textoNombre);
-    nombreSpan.appendChild(etiqueta);
-
+    nombreSpan.innerHTML = nombreCompleto;
     div.appendChild(nombreSpan);
 
     const acciones = document.createElement('div');
