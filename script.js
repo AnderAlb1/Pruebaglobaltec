@@ -4411,7 +4411,12 @@ function crearEntrada(nombre, tipo, entradaId, mes, esManual) {
     const nombreCompleto = nombre + etiqueta;
 
     const div = document.createElement('div');
-    div.className = `cal-entrada cal-entrada-preventivo`;
+    let tipoClase = 'cal-entrada-otro';
+    if (tipo === 'preventivo' || tipo === 'manual-preventivo') tipoClase = 'cal-entrada-preventivo';
+    if (tipo === 'metrologia' || tipo === 'manual-metrologia') tipoClase = 'cal-entrada-metrologia';
+
+    div.className = `cal-entrada ${tipoClase}`;
+
     if (estaTachado) div.classList.add('realizado');
     div.dataset.clave = clave;
     div.dataset.entradaId = entradaId;
@@ -4451,6 +4456,12 @@ function crearEntrada(nombre, tipo, entradaId, mes, esManual) {
     acciones.appendChild(btnX);
 
     div.appendChild(acciones);
+    if (!esManual && estaTachado) {
+        db.collection('calendario-tachados').doc(clave).delete().catch(e => console.log(e));
+        tachados[clave] = false;
+        div.classList.remove('realizado');
+    }
+
     return div;
 }
 
