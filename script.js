@@ -40,6 +40,9 @@ auth.onAuthStateChanged((user) => {
             // Si la última sección era configuración, mostrarla
             if (ultimaSeccionAbierta === 'configuracion') {
                 mostrarSeccion('configuracion');
+
+            } else if (ultimaSeccionAbierta === 'calendario') {
+                mostrarSeccion('calendario');    
             } else {
                 // Restaurar el servicio anterior (biomedico o refrigeracion)
                 const servicio = ultimaSeccionServicio || 'biomedico';
