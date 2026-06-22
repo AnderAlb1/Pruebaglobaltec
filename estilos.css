@@ -1420,7 +1420,19 @@ button[type="submit"]:disabled {
 @media (max-width: 640px) { .calendario-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; } .cal-mes-nombre { font-size: 11px; } }
 @media (max-width: 400px) { .calendario-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; } }
 
-.cal-mes-card { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; display: flex; flex-direction: column; overflow: hidden; transition: box-shadow 0.2s; }
+.cal-mes-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+    position: relative;
+    padding-bottom: 36px;
+}
+
 
 .cal-mes-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.13); }
 
@@ -1434,7 +1446,16 @@ button[type="submit"]:disabled {
 
 .cal-mes-body { flex: 1; padding: 8px; min-height: 60px; display: flex; flex-direction: column; gap: 5px; }
 
-.cal-entrada { display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; border-radius: 5px; font-size: 12px; gap: 6px; border-left: 3px solid transparent; }
+.cal-entrada {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    gap: 4px;
+    border-left: 3px solid transparent;
+}
 
 .cal-entrada-preventivo { background: #fff3e0; border-left-color: #e67e22; }
 .cal-entrada-metrologia { background: #fff3e0; border-left-color: #e67e22; }
@@ -1447,7 +1468,12 @@ button[type="submit"]:disabled {
 
 .cal-tachado .cal-entrada-nombre { text-decoration: line-through; color: #4CAF50; }
 
-.cal-entrada-acciones { display: flex; gap: 3px; flex-shrink: 0; }
+.cal-entrada-acciones {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    align-self: flex-end;
+}
 
 .cal-btn-check { background: #e8f5e9; color: #388e3c; border: 1px solid #a5d6a7; border-radius: 4px; width: 22px; height: 22px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; padding: 0; font-weight: bold; }
 
@@ -1459,7 +1485,24 @@ button[type="submit"]:disabled {
 
 .cal-btn-x:hover { background: #e74c3c; color: white; border-color: #e74c3c; }
 
-.cal-btn-agregar { width: calc(100% - 16px); margin: 6px 8px 8px 8px; padding: 5px; background: #f0f9f0; color: #4CAF50; border: 1px dashed #4CAF50; border-radius: 5px; font-size: 12px; cursor: pointer; transition: all 0.2s; font-weight: bold; }
-
-.cal-btn-agregar:hover { background: #4CAF50; color: white; border-style: solid; }
-
+.cal-btn-agregar {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: all 0.2s;
+    padding: 0;
+    line-height: 1;
+}
+.cal-btn-agregar:hover { background: #388e3c; transform: scale(1.1); }

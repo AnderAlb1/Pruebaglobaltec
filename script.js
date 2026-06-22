@@ -4428,7 +4428,12 @@ function crearEntrada(nombre, tipo, entradaId, mes, esManual) {
     const btnCheck = document.createElement('button');
     btnCheck.className = 'cal-btn-check' + (estaTachado ? ' activo' : '');
     btnCheck.textContent = '✓';
-    btnCheck.title = estaTachado ? 'Desmarcar' : 'Marcar como realizado';
+    btnCheck.title = estaTachado ? 'Realizado' : 'Marcar como realizado';
+    btnCheck.disabled = estaTachado;
+    if (estaTachado) {
+        btnCheck.style.opacity = '0.6';
+        btnCheck.style.cursor = 'not-allowed';
+    }
     btnCheck.onclick = (e) => {
         e.stopPropagation();
         toggleTachado(clave, div, btnCheck);
@@ -4460,22 +4465,24 @@ function getTipoClass(tipo) {
 async function toggleTachado(clave, div, btn) {
     try {
         if (tachados[clave]) {
-            await db.collection('calendario-tachados').doc(clave).delete();
-            delete tachados[clave];
-            div.classList.remove('realizado');
-            btn.classList.remove('activo');
-            btn.title = 'Marcar como realizado';
+            // No hacer nada, ya está marcado como realizado
+            mostrarToast('Este servicio ya fue marcado como realizado', 'info');
+            return;
         } else {
             await db.collection('calendario-tachados').doc(clave).set({ clave, anio: anioCalendario });
             tachados[clave] = true;
             div.classList.add('realizado');
             btn.classList.add('activo');
-            btn.title = 'Desmarcar';
+            btn.disabled = true;
+            btn.title = 'Realizado';
+            btn.style.opacity = '0.6';
+            btn.style.cursor = 'not-allowed';
         }
     } catch (e) {
         mostrarToast('Error al guardar estado', 'error');
     }
 }
+
 
 
 // ── Eliminar entrada ──
