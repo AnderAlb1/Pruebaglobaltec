@@ -288,8 +288,11 @@ window.mostrarServicio = function(servicio) {
     servicioActual = servicio;
     
     // Guardar el servicio actual
+    // localStorage.setItem('ultimaSeccionServicio', servicio);
+    // localStorage.removeItem('ultimaSeccion'); // Limpiar para evitar confusión
+    // Guardar el estado actual
     localStorage.setItem('ultimaSeccionServicio', servicio);
-    localStorage.removeItem('ultimaSeccion'); // Limpiar para evitar confusión
+    localStorage.setItem('ultimaSeccion', servicio);
     
     // Actualizar botones del menú lateral
     document.querySelectorAll('.btn-menu-lateral').forEach(btn => {
